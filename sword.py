@@ -19,14 +19,18 @@ class Sword():
         #A temp variable to store the individual transformations without too much loss of quality:
         self.rotated_image = pygame.transform.rotate(self.image, 180)
         
-        self.rotated_image.set_colorkey(WHITE)
+        self.image.set_colorkey(WHITE)
         
         #Since we're rotating from the corner, the image's x and y coordinate will need to be corrected
         self.x_offset = player.radius
         self.y_offset = player.radius
         
-        #FIND A BETTER WAY TO DO THIS BESIDES CHECKING A STRING
-        self.item_type = "main_hand"
+        #Each type is represented by a number
+        #1 represents main hand
+        #2 represents off hand
+        #3 represents consumable
+        #4 represents key item, or other
+        self.item_type = 1
         
         """A super basic sword"""
         
@@ -62,14 +66,14 @@ class Sword():
         self.alive = True
         
     def draw(self, screen, pos):
-		
+        
         #This draw method is to be called by the inventory class, 
         #so as to remove the confusing between the player's attacking sword
         #And the inventory's static sword
         screen.blit(self.image, pos)
                     
     def attack_draw(self, screen):
-		
+        
         #We always draw the rotated image, even if the sword isn't rotated. The update method should account for that.
         if self.attacking:
             screen.blit(self.rotated_image, [self.hilt_posx + self.x_offset, self.hilt_posy + self.y_offset])

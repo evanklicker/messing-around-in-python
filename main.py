@@ -46,12 +46,25 @@ def main():
                                      
             #If the user clicked   
             if event.type == pygame.MOUSEBUTTONDOWN:
+                
+                #Because we are almost certainly going to need it
+                pos = pygame.mouse.get_pos()
+                
                 #And the click was a left click
                 if event.button == 1:
+                    
                     #And they are considering quitting
                     if quitter.quitting:
                         #Check to see if they clicked a button
-                        quitter.button_depress(screen, pygame.mouse.get_pos())
+                        quitter.button_depress(screen, pos)
+                    
+                    #Or, if the inventory is showing
+                    elif player.showing_inventory:
+                        #Select an item
+                        player.inventory.select_item(pos)
+                        
+                        
+                        
                         
             if event.type == pygame.MOUSEBUTTONUP:
                 done = quitter.quit_check(screen, pygame.mouse.get_pos())

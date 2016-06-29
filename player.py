@@ -44,8 +44,8 @@ class Player():
         
         #A sword for our noble hero!
         self.inventory.get_item(s.Sword(self))
-        self.equipped_main_hand = self.inventory.item_list[0]
-        
+        self.equipped_main_hand = self.inventory.slot_list[8]
+        self.equipped_off_hand  = self.inventory.slot_list[9]
         
         #A list for every bullet that exists
         self.bullet_list = [] 
@@ -116,6 +116,7 @@ class Player():
             self.posx = newx
             
         #If the x value isn't:
+
         elif newx < self.radius:
             self.posx = self.radius
         elif newx > x_limit - self.radius:
@@ -151,7 +152,7 @@ class Player():
             self.direction = "RD"
             
         #This code checks to see whether or not the player should be attacking
-        if self.attacking:
+        if self.attacking and self.equipped_main_hand:
             self.attack(screen, frame)
             
         #Checking to see if the bullets have expired. If not, update them!
@@ -163,9 +164,9 @@ class Player():
         for item in self.inventory.item_list:
             if item:
                 item.update(screen, self, frame)
-                #print("Item Updated!")
         
-        #print("Inventory Updated!")
+        self.equipped_main_hand = self.inventory.slot_list[8].contained_item
+        self.equipped_off_hand  = self.inventory.slot_list[9].contained_item
 
     def draw(self, screen, frame):
         
@@ -194,7 +195,7 @@ class Player():
         for bullet in self.bullet_list:
             bullet.draw(screen)
         
-        if self.attacking:
+        if self.attacking and self.equipped_main_hand:
             self.equipped_main_hand.attack_draw(screen)
         
         if self.showing_inventory:
@@ -202,31 +203,33 @@ class Player():
             
     def attack(self, screen, frame):
         
-        #There is still a bit of a glitch in this code. Every so often, a bullet doesn't fire when it should.
+        #There is still a bit of a glitch in this code. Every so often, an animation gets skipped.
         #Probably something to do with the frame checking.
         
-        #This code handles the player's frame separately from the game frames.
-        if self.frame_temp != frame:
-            self.frame += 1
-            self.frame_temp = frame
+        if self.equipped_main_hand:
+        
+            #This code handles the player's frame separately from the game frames.
+            if self.frame_temp != frame:
+                self.frame += 1
+                self.frame_temp = frame
             
-        #If our attacking cooldown is done, then we can attack again!
-        if self.cooldown_done:
+            #If our attacking cooldown is done, then we can attack again!
+            if self.cooldown_done:
             
-            #If we wanted to shoot bullets, we'd do this code:
+                #If we wanted to shoot bullets, we'd do this code:
             
-            print("Cooldown Done!")
-            #bullet = b.Bullet(self)
-            #self.cooldown_done = False
-            #self.bullet_list.append(bullet)
+                print("Cooldown Done!")
+                #bullet = b.Bullet(self)
+                #self.cooldown_done = False
+                #self.bullet_list.append(bullet)
             
             
-            #Good thing we wanna swing a sword!
-            self.equipped_main_hand.attacking = True
-            self.cooldown_down = False
+                #Good thing we wanna swing a sword!
+                self.equipped_main_hand.attacking = True
+                self.cooldown_down = False
             
-        #Resetting the cooldown based on the players frames.
-        if self.frame == 19:
-            self.cooldown_done = True
-            self.frame = 0
+            #Resetting the cooldown based on the players frames.
+            if self.frame == 19:
+                self.cooldown_done = True
+                self.frame = 0
             
