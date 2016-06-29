@@ -13,20 +13,17 @@ def main():
     
     pygame.init()
     
-    window_size = (800, 600)
-    screen = pygame.display.set_mode(window_size)
+    WINDOW_SIZE = (800, 600)
+    screen = pygame.display.set_mode(WINDOW_SIZE)
     
     pygame.display.set_caption("My Game")
     
-    player = p.Player()
-    quitter = q.quit_box(screen)
+    player = p.Player(screen)
+    quitter = q.Quit_box(screen)
    
     done = False
-    about_to_quit = False
     
-    animation = False
     frame = 0
-    frame_on = False
     
     clock = pygame.time.Clock()
     
@@ -71,26 +68,28 @@ def main():
                         player.stop_down()            
                     if event.key == pygame.K_SPACE or event.key == pygame.K_z:
                         player.attacking = False
+                    if event.key == pygame.K_RETURN or event.key == pygame.K_i:
+                        player.showing_inventory = not player.showing_inventory
+                        print(player.showing_inventory)
 
                 #I arbitrarily decided to put this in the KEYUP section instead of the KEYDOWN section
                 if event.key == pygame.K_ESCAPE:
                     player.attacking = False
                     #Switch the state of quitter.quitting:
-                    if not quitter.quitting:
-                        quitter.quitting = True
-                    elif quitter.quitting:
-                        quitter.quitting = False
+                    quitter.quitting = not quitter.quitting
                         
                                    
         player.update(screen, frame)
                 
         screen.fill(WHITE)
-         
+        
         player.draw(screen, frame)
+        
+        #screen.blit(pygame.image.load("./Items/inventory_slot_background.png"), [100, 100])
         
         if quitter.quitting:
             quitter.draw(screen)  
-			 
+             
         pygame.display.flip()
         clock.tick(60)
         

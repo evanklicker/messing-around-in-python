@@ -1,13 +1,15 @@
 import pygame
 import math
 import bullet as b
+import sword as s
+import inventory as i
 
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 BROWN = (130,  94,  35)
 
 class Player():
-    def __init__(self):
+    def __init__(self, screen):
         
         #The player is, at this point, and circle.
         self.radius = 15
@@ -30,14 +32,24 @@ class Player():
         self.frame = 0
         self.frame_temp = 0
         
-        #A list for every bullet that exists
-        self.bullet_list = []        
-        
         #Attributes to keep track of player location
         self.posx = 100
         self.posy = 100
         self.changex = 0
         self.changey = 0
+        
+        #Let's get some items! We need an inventory first, though
+        self.inventory = i.Inventory(screen)
+        self.showing_inventory = False
+        
+        #A sword for our noble hero!
+        self.inventory.get_item(s.Sword(self))
+        self.equipped_main_hand = self.inventory.item_list[0]
+        
+        
+        #A list for every bullet that exists
+        self.bullet_list = [] 
+            
         
         
     #Self explanatory
@@ -88,6 +100,9 @@ class Player():
             self.changey = 5
         elif self.changey < -5:
             self.changey = -5
+            
+    def get_item(self, item):
+        self.inventory.get_item(item)
         
     def update(self, screen, frame):
         
@@ -95,21 +110,29 @@ class Player():
         x_limit, y_limit = screen.get_size()
         newx = self.posx + self.changex
         newy = self.posy + self.changey
+        
+        #If our x value is within the bounds of the screen:
         if newx >= self.radius and newx < x_limit - self.radius + 1:
             self.posx = newx
+            
+        #If the x value isn't:
         elif newx < self.radius:
             self.posx = self.radius
         elif newx > x_limit - self.radius:
             self.posx = x_limit - self.radius
             
+        #If our y value is within the bounds of the screen:
         if newy >= self.radius and newy  <= y_limit - self.radius:
             self.posy = newy
+        
+        #If the y value isn't:
         elif newy < self.radius - 1:
             self.posy = self.radius
         elif newy >= y_limit - self.radius + 2:
             self.posy = y_limit - self.radius
         
-        """Code block for maintaining player direction"""    
+        """Code block for maintaining player direction"""  
+          
         if self.changex < 0 and self.changey == 0:
             self.direction = "L"
         elif self.changex > 0 and self.changey == 0:
@@ -136,9 +159,17 @@ class Player():
             if not bullet.update(screen, frame):
                 self.bullet_list.remove(bullet)
 
+        #Update every item's position
+        for item in self.inventory.item_list:
+            if item:
+                item.update(screen, self, frame)
+                #print("Item Updated!")
+        
+        #print("Inventory Updated!")
+
     def draw(self, screen, frame):
-		
-		#The variables are pretty self-explanatory. The 2 at the end should be replaced with self.border_width at some point
+        
+        #The variables are pretty self-explanatory. The 2 at the end should be replaced with self.border_width at some point
         pygame.draw.circle(screen, self.color, [self.posx, self.posy], self.radius, 2)
         
         #The following code draws the player's "eye" based on the direction the player is moving
@@ -159,9 +190,15 @@ class Player():
         if self.direction == "RD":
             pygame.draw.circle(screen, self.color2, [self.posx + round(self.radius / math.sqrt(2)), self.posy + round(self.radius / math.sqrt(2))], 1)
                       
-        """This should def NOT be in the update section"""            
+        #Draw the bullets! All of 'em!           
         for bullet in self.bullet_list:
             bullet.draw(screen)
+        
+        if self.attacking:
+            self.equipped_main_hand.attack_draw(screen)
+        
+        if self.showing_inventory:
+            self.inventory.draw(screen)
             
     def attack(self, screen, frame):
         
@@ -175,12 +212,20 @@ class Player():
             
         #If our attacking cooldown is done, then we can attack again!
         if self.cooldown_done:
+            
+            #If we wanted to shoot bullets, we'd do this code:
+            
             print("Cooldown Done!")
-            bullet = b.Bullet(self)
-            self.cooldown_done = False
-            self.bullet_list.append(bullet)
-   
-		#Resetting the cooldown based on the players frames.
+            #bullet = b.Bullet(self)
+            #self.cooldown_done = False
+            #self.bullet_list.append(bullet)
+            
+            
+            #Good thing we wanna swing a sword!
+            self.equipped_main_hand.attacking = True
+            self.cooldown_down = False
+            
+        #Resetting the cooldown based on the players frames.
         if self.frame == 19:
             self.cooldown_done = True
             self.frame = 0
