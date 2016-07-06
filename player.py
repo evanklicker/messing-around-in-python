@@ -1,29 +1,114 @@
 import pygame
 import math
 import bullet as b
-import sword as s
+import sword as sw
 import inventory as i
+import shield as sh
+import spritesheet as ss
 
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 BROWN = (130,  94,  35)
 
-class Player():
+class Player(pygame.sprite.Sprite):
     def __init__(self, screen):
-        
-        #The player is, at this point, and circle.
-        self.radius = 15
-        self.move_speed = 3
-        
-        #Currently, this is the color of the edge of the circle. The inside is white.
-        self.color = GREEN
-        
-        #So we can tell what direction the player is facing
-        #This is the color used for the player's "eye"
-        self.color2 = BLUE
+        super().__init__()
         
         #Possible directions are Left (L), Right (R), Up (U), Down (D), Left-Up (LU), Left-Down (LD), Right-Up (RU), and Right-Down (RD)
+        #The diagonal directions will be leaving here shortly
         self.direction = "R"
+        
+        #How fast the player moves
+        self.move_speed = 3
+        
+        #Player walking images
+        self.walking_frames_u = []
+        self.walking_frames_d = []
+        self.walking_frames_l = []
+        self.walking_frames_r = []
+        
+        #Player images
+        sprite_sheet = ss.SpriteSheet("./player/mage_walking_sheet.png")
+        #Spritesheet courtesy of Redshrike from opengameart.org
+        #http://opengameart.org/content/four-characters-my-lpc-entries
+        image = sprite_sheet.get_image(16, 9, 32, 52)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(80, 9, 32, 52)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(144, 9, 33, 53)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(208, 10, 31, 53)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(272, 9, 32, 54)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(336, 9, 32, 52)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(400, 9, 32, 53)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(465, 10, 31, 53)
+        self.walking_frames_u.append(image)
+        image = sprite_sheet.get_image(528, 9, 32, 54)
+        self.walking_frames_u.append(image)
+
+        image = sprite_sheet.get_image(17, 72, 30, 53)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(81, 74, 30, 52)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(145, 73, 30, 52)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(209, 73, 30, 53)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(273, 73, 30, 53)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(337, 74, 31, 52)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(401, 73, 30, 53)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(465, 73, 30, 53)
+        self.walking_frames_l.append(image)
+        image = sprite_sheet.get_image(529, 73, 30, 53)
+        self.walking_frames_l.append(image)
+        
+        image = sprite_sheet.get_image(16, 137, 32, 54)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(80, 137, 32, 54)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(145, 137, 32, 55)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(209, 138, 31, 54)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(272, 137, 33, 55)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(336, 137, 32, 53)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(400, 137, 33, 53)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(464, 138, 32, 54)
+        self.walking_frames_d.append(image)
+        image = sprite_sheet.get_image(528, 137, 32, 54)
+        self.walking_frames_d.append(image)      
+
+        image = sprite_sheet.get_image(17, 201, 30, 53)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(81, 202, 30, 52)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(145, 201, 30, 52)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(209, 201, 30, 53)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(273, 201, 30, 53)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(336, 202, 31, 52)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(401, 201, 30, 53)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(465, 201, 30, 53)
+        self.walking_frames_r.append(image)
+        image = sprite_sheet.get_image(529, 201, 30, 53)
+        self.walking_frames_r.append(image)
+        
+        self.image = self.walking_frames_r[0]
+        self.rect = self.image.get_rect()
         
         #Attributes for attacking
         self.attack_cooldown = 20 #frames
@@ -33,8 +118,6 @@ class Player():
         self.frame_temp = 0
         
         #Attributes to keep track of player location
-        self.posx = 100
-        self.posy = 100
         self.changex = 0
         self.changey = 0
         
@@ -43,53 +126,59 @@ class Player():
         self.showing_inventory = False
         
         #A sword for our noble hero!
-        self.inventory.get_item(s.Sword(self))
+        #And a shield!
+        self.get_item(sw.Sword(self))
+        self.get_item(sh.Shield(self))
         self.equipped_main_hand = self.inventory.slot_list[8]
         self.equipped_off_hand  = self.inventory.slot_list[9]
         
         #A list for every bullet that exists
         self.bullet_list = [] 
             
-        
-        
     #Self explanatory
     def go_left(self):
         self.changex += -self.move_speed
-        self.direction = "L"
         self.speed_check()
         
     def go_right(self):
         self.changex += self.move_speed
-        self.direction = "R"
         self.speed_check()
             
     def go_up(self):
         self.changey += -self.move_speed
-        self.direction = "U"
         self.speed_check()
                    
     def go_down(self):
         self.changey += self.move_speed
-        self.direction = "D"
         self.speed_check
         
         
     #These functions basically just reverse the ones from above        
     def stop_left(self):
-        self.changex += self.move_speed
+        if self.changex != 0:
+            self.changex += self.move_speed
         self.speed_check()
     
     def stop_right(self):
-        self.changex += -self.move_speed
+        if self.changex != 0:
+            self.changex += -self.move_speed
         self.speed_check()
         
     def stop_up(self):
-        self.changey += self.move_speed
+        if self.changey != 0:
+            self.changey += self.move_speed
         self.speed_check()
         
     def stop_down(self):
-        self.changey += -self.move_speed
+        if self.changey != 0:
+            self.changey += -self.move_speed
         self.speed_check()
+        
+    def stop(self):
+        #This stops all movement, period
+        self.changex = 0
+        self.changey = 0
+        self.attacking = False
         
     def speed_check(self):
         if self.changex > 5:
@@ -108,29 +197,29 @@ class Player():
         
         """Code block for mainting on-screen position"""
         x_limit, y_limit = screen.get_size()
-        newx = self.posx + self.changex
-        newy = self.posy + self.changey
+        newx = self.rect.x + self.changex
+        newy = self.rect.y + self.changey
         
         #If our x value is within the bounds of the screen:
-        if newx >= self.radius and newx < x_limit - self.radius + 1:
-            self.posx = newx
+        if newx >= 0 and newx < x_limit - self.rect.width:
+            self.rect.x = newx
             
         #If the x value isn't:
 
-        elif newx < self.radius:
-            self.posx = self.radius
-        elif newx > x_limit - self.radius:
-            self.posx = x_limit - self.radius
+        elif newx < 0:
+            self.rect.x = 0
+        elif newx > x_limit - self.rect.width:
+            self.rect.x = x_limit - self.rect.width
             
         #If our y value is within the bounds of the screen:
-        if newy >= self.radius and newy  <= y_limit - self.radius:
-            self.posy = newy
+        if newy >= 0 and newy  <= y_limit - self.rect.height:
+            self.rect.y = newy
         
         #If the y value isn't:
-        elif newy < self.radius - 1:
-            self.posy = self.radius
-        elif newy >= y_limit - self.radius + 2:
-            self.posy = y_limit - self.radius
+        elif newy < 0:
+            self.rect.y = 0.
+        elif newy >= y_limit - self.rect.height:
+            self.rect.y = y_limit - self.rect.height
         
         """Code block for maintaining player direction"""  
           
@@ -142,14 +231,22 @@ class Player():
             self.direction = "U"
         elif self.changey > 0 and self.changex == 0:
             self.direction = "D"
-        elif self.changex < 0 and self.changey < 0:
-            self.direction = "LU"
-        elif self.changex < 0 and self.changey > 0:
-            self.direction = "LD"
-        elif self.changex > 0 and self.changey < 0:
-            self.direction = "RU"
-        elif self.changex > 0 and self.changey > 0:
-            self.direction = "RD"
+
+            
+        """Code block for maintaining walking frames"""    
+
+        if self.direction == "U":
+            walking_frame = (self.rect.y // 30) % len(self.walking_frames_u)
+            self.image = self.walking_frames_u[walking_frame]
+        elif self.direction == "D":
+            walking_frame = (self.rect.y // 30) % len(self.walking_frames_d)
+            self.image = self.walking_frames_d[walking_frame]
+        elif self.direction == "R":
+            walking_frame = (self.rect.x // 30) % len(self.walking_frames_r)
+            self.image = self.walking_frames_r[walking_frame]
+        elif self.direction == "L":
+            walking_frame = (self.rect.x // 30) % len(self.walking_frames_l)
+            self.image = self.walking_frames_l[walking_frame]
             
         #This code checks to see whether or not the player should be attacking
         if self.attacking and self.equipped_main_hand:
@@ -171,32 +268,14 @@ class Player():
     def draw(self, screen, frame):
         
         #The variables are pretty self-explanatory. The 2 at the end should be replaced with self.border_width at some point
-        pygame.draw.circle(screen, self.color, [self.posx, self.posy], self.radius, 2)
-        
-        #The following code draws the player's "eye" based on the direction the player is moving
-        if self.direction == "L":
-            pygame.draw.circle(screen, self.color2, [self.posx - (self.radius - 1) , self.posy], 1)
-        if self.direction == "R":
-            pygame.draw.circle(screen, self.color2, [self.posx + (self.radius - 1), self.posy], 1)
-        if self.direction == "U":
-            pygame.draw.circle(screen, self.color2, [self.posx, self.posy - (self.radius - 1)], 1)
-        if self.direction == "D":
-            pygame.draw.circle(screen, self.color2, [self.posx, self.posy + (self.radius - 1)], 1)
-        if self.direction == "LU":
-            pygame.draw.circle(screen, self.color2, [self.posx - round(self.radius / math.sqrt(2)), self.posy - round(self.radius / math.sqrt(2))], 1)
-        if self.direction == "RU":
-            pygame.draw.circle(screen, self.color2, [self.posx + round(self.radius / math.sqrt(2)), self.posy - round(self.radius / math.sqrt(2))], 1)
-        if self.direction == "LD":
-            pygame.draw.circle(screen, self.color2, [self.posx - round(self.radius / math.sqrt(2)), self.posy + round(self.radius / math.sqrt(2))], 1)
-        if self.direction == "RD":
-            pygame.draw.circle(screen, self.color2, [self.posx + round(self.radius / math.sqrt(2)), self.posy + round(self.radius / math.sqrt(2))], 1)
-                      
+        screen.blit(self.image, [self.rect.x, self.rect.y])
+           
         #Draw the bullets! All of 'em!           
         for bullet in self.bullet_list:
             bullet.draw(screen)
         
         if self.attacking and self.equipped_main_hand:
-            self.equipped_main_hand.attack_draw(screen)
+            self.equipped_main_hand.attack_draw(screen, frame)
         
         if self.showing_inventory:
             self.inventory.draw(screen)
@@ -218,7 +297,6 @@ class Player():
             
                 #If we wanted to shoot bullets, we'd do this code:
             
-                print("Cooldown Done!")
                 #bullet = b.Bullet(self)
                 #self.cooldown_done = False
                 #self.bullet_list.append(bullet)
@@ -230,6 +308,8 @@ class Player():
             
             #Resetting the cooldown based on the players frames.
             if self.frame == 19:
+                self.equipped_main_hand.attacking = False
+                print(self.equipped_main_hand.attacking)
                 self.cooldown_done = True
                 self.frame = 0
             

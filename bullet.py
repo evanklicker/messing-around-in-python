@@ -14,8 +14,8 @@ class Bullet():
         self.thickness = 3
         
         #These keep track of the bullet's position
-        self.start_posx = player.posx
-        self.start_posy = player.posy
+        self.start_posx = player.rect.x
+        self.start_posy = player.rect.y
         
         self.end_posx = self.start_posx
         self.end_posy = self.start_posy

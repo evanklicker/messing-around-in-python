@@ -93,23 +93,23 @@ class Inventory():
         #First things first: Is there even an item to remove?
         if self.slot_list[8]:
             #If we have space in our inventory
-            if len(self.item_list) < 8:
-                print(self.slot_list[8].contained_item)
-                
+            if len(self.item_list) < 8:               
                 #Will be true if there was an item, it was lost, and then successfully put back into the inventory
                 return self.get_item(self.lose_item(self.slot_list[8].contained_item))
             else:
                 return False
+        return True
         
     #Remove any item that's currently in the off-hand slot
     def unequip_off(self):
-		#Same as the previous function: Is there anything to remove?
+        #Same as the previous function: Is there anything to remove?
         if self.slot_list[9].contained_item:
             #If we have space in our inventory
             if len(self.item_list) < 8:
                 return self.get_item(self.lose_item(self.slot_list[9].contained_item))
             else:
                 return False
+        return True
         
     #Prepare items to be used
     def select_item(self, mouse_pos):
@@ -188,34 +188,34 @@ class Slot(pygame.sprite.Sprite):
         pygame.draw.rect(screen, GREY, [self.rect.x - 5, self.rect.y - 5, self.rect.width + 10, self.rect.height + 10])
         screen.blit(self.image, self)
         if self.contained_item:
-            self.contained_item.draw(screen, [self.rect.x + 25, self.rect.y + 25])
+            self.contained_item.draw(screen, [self.rect.x + (self.rect.width - self.contained_item.image.get_rect().width) / 2, self.rect.y + (self.rect.height - self.contained_item.image.get_rect().height) / 2])
       
         if self.selected:
             #Left Bracket
             #Horizontal Line
             pygame.draw.line(screen, GREEN, 
-            [self.rect.x + 20, self.rect.y + 20], [self.rect.x + 40, self.rect.y + 20])
+            [self.rect.x + 10, self.rect.y + 10], [self.rect.x + 30, self.rect.y + 10])
             
             #Verticle Line
             pygame.draw.line(screen, GREEN, 
-            [self.rect.x + 20, self.rect.y + 20], [self.rect.x + 20, self.rect.y + 80])
+            [self.rect.x + 10, self.rect.y + 10], [self.rect.x + 10, self.rect.y + 90])
             
             #Horizontal Line
             pygame.draw.line(screen, GREEN, 
-            [self.rect.x + 20, self.rect.y + 80], [self.rect.x + 40, self.rect.y + 80])
+            [self.rect.x + 10, self.rect.y + 90], [self.rect.x + 30, self.rect.y + 90])
                     
             #Right Bracket
             #Horizontal Line
             pygame.draw.line(screen, GREEN, 
-            [self.rect.x + 60, self.rect.y + 20], [self.rect.x + 80, self.rect.y + 20])
+            [self.rect.x + 70, self.rect.y + 10], [self.rect.x + 90, self.rect.y + 10])
             
             #Verticle Line
             pygame.draw.line(screen, GREEN, 
-            [self.rect.x + 80, self.rect.y + 20], [self.rect.x + 80, self.rect.y + 80])
+            [self.rect.x + 90, self.rect.y + 10], [self.rect.x + 90, self.rect.y + 90])
             
             #Horizontal Line
             pygame.draw.line(screen, GREEN, 
-            [self.rect.x + 60, self.rect.y + 80], [self.rect.x + 80, self.rect.y + 80])
+            [self.rect.x + 70, self.rect.y + 90], [self.rect.x + 90, self.rect.y + 90])
                                                     
     def get_item(self, item):
         if not self.contained_item and item:

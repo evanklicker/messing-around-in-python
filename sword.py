@@ -4,7 +4,7 @@ import math
 BROWN = (130,  94,  35)
 WHITE = (255, 255, 255)
 
-class Sword():
+class Sword(pygame.sprite.Sprite):
     def __init__(self, player):
         
         #This loads the image and converts it to a format pygame can work with easier
@@ -22,8 +22,11 @@ class Sword():
         self.image.set_colorkey(WHITE)
         
         #Since we're rotating from the corner, the image's x and y coordinate will need to be corrected
-        self.x_offset = player.radius
-        self.y_offset = player.radius
+        #Rotate about the center of the player image
+        self.x_offset = player.rect.x / 2
+        self.y_offset = player.rect.y / 2
+        
+        self.rect = self.image.get_rect()
         
         #Each type is represented by a number
         #1 represents main hand
@@ -32,24 +35,11 @@ class Sword():
         #4 represents key item, or other
         self.item_type = 1
         
-        """A super basic sword"""
-        
         #Base the initial positions on the player's positions
-        self.hilt_posx = player.posx
-        self.hilt_posy = player.posy
-        
-        self.tip_posx  = self.hilt_posx
-        self.tip_posy  = self.hilt_posy
-        
+        self.hilt_posx = player.rect.x
+        self.hilt_posy = player.rect.y
+      
         self.direction = player.direction
-        
-        #It's a wooden sword
-        self.color = BROWN
-        
-        #Physical dimensions
-        #At some point, the "25" and "5" will be replaced with something like "sword_type.length" and "sword_type.width", respectively
-        self.length = 25
-        self.width  = 5
         
         #Used to determine attack cooldown
         #Higher = faster
@@ -72,12 +62,13 @@ class Sword():
         #And the inventory's static sword
         screen.blit(self.image, pos)
                     
-    def attack_draw(self, screen):
+    def attack_draw(self, screen, frame):
         
         #We always draw the rotated image, even if the sword isn't rotated. The update method should account for that.
+
         if self.attacking:
-            screen.blit(self.rotated_image, [self.hilt_posx + self.x_offset, self.hilt_posy + self.y_offset])
-            
+            screen.blit(self.rotated_image, [self.rect.x + self.x_offset, self.rect.y + self.y_offset])
+
     def update(self, screen, player, frame):
         """Change the sword's position and possilby direction based on the player's positioning, as well as the sword's own frame counter"""
         
@@ -89,53 +80,42 @@ class Sword():
             self.direction = player.direction
             
             #We also need to update the position such that it always follows the player
-            self.hilt_posx = player.posx
-            self.hilt_posy = player.posy 
+            self.rect.x = player.rect.x
+            self.rect.y = player.rect.y
             
-            self.x_offset = player.radius
-            self.y_offset = player.radius
+            self.x_offset = self.rect.width
+            self.y_offset = self.rect.height
         
             #Then, we update our frame
+                
             if self.frame_temp != frame:
                 self.frame += 1
                 self.frame_temp = frame
-        
+                        
+            if self.frame >= self.expiration_frame:
+                self.attacking = False
+                self.frame = 0
+              
             #We have to handle each direction separately
             #These angles represent the rotation that has to be done at the start of the animation
             #Every angle will end up being 90 degrees larger at the end of the animation
             #I also decided to keep all the angles between -180 and 180 degrees, 'cuz I can
             if    self.direction == "L":
                 rotate_angle =  180 + (90 * self.frame / self.expiration_frame)
-                self.x_offset = -90
-                self.y_offset *= -2
+                self.x_offset = -self.rect.width
+                self.y_offset = -self.rect.height / 4
             elif  self.direction == "R":
                 rotate_angle =    0 + (90 * self.frame / self.expiration_frame)
-                self.x_offset += 0
-                self.y_offset *= -2
+                self.x_offset = 0
+                self.y_offset = 0 #self.rect.height / 4
             elif  self.direction == "U":
                 rotate_angle =   90 + (90 * self.frame / self.expiration_frame)
-                self.x_offset *= -2
-                self.y_offset = -90
+                self.x_offset = -self.rect.width / 2
+                self.y_offset = -self.rect.height / 2
             elif  self.direction == "D":
                 rotate_angle =  -90 + (90 * self.frame / self.expiration_frame)
-                self.x_offset *= -2
-                self.y_offset += 0 
-            elif self.direction == "LU":
-                rotate_angle =  135 + (90 * self.frame / self.expiration_frame)
-                self.x_offset = -90
-                self.y_offset = -90
-            elif self.direction == "LD":
-                rotate_angle = -135 + (90 * self.frame / self.expiration_frame)
-                self.x_offset = -90
-                self.y_offset += 0
-            elif self.direction == "RU":
-                rotate_angle =   45 + (90 * self.frame / self.expiration_frame)
-                self.x_offset += 0
-                self.y_offset = -90
-            elif self.direction == "RD":
-                rotate_angle =  -45 + (90 * self.frame / self.expiration_frame)
-                self.x_offset += 0
-                self.y_offset += 0
+                self.x_offset = -self.rect.width / 2
+                self.y_offset = self.rect.height / 2
                 
             rotate_angle += 180
                 
@@ -143,6 +123,4 @@ class Sword():
             self.rotated_image = pygame.transform.rotate(self.image, rotate_angle)
             
             #Finally, we check for expiration and reset our frame counter if we need to
-            if self.frame >= self.expiration_frame:
-                self.attacking = False
-                self.frame = 0
+
