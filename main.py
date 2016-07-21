@@ -1,6 +1,7 @@
 import pygame
 import player as p
 import quitter as q
+import map_list as m
 
 BLACK = (  0,   0,   0)
 BROWN = (130,  94,  35)
@@ -13,12 +14,19 @@ def main():
     
     pygame.init()
     
-    WINDOW_SIZE = (800, 600)
+    WINDOW_SIZE = (1200, 800)
     screen = pygame.display.set_mode(WINDOW_SIZE)
     
     pygame.display.set_caption("My Game")
     
-    player = p.Player(screen)
+    room_list = []
+    
+    room = m.Map1(screen)
+    room_list.append(room)
+    
+    current_room = room_list[0]    
+    
+    player = p.Player(screen, current_room)
     quitter = q.Quit_box(screen)
    
     done = False
@@ -43,7 +51,7 @@ def main():
             #I'm putting it first because I think those screens should have priority, if any issues come up
             if game_state >= 1:  
                 
-                player.stop()
+                player.updating = False
                 
                 if event.type == pygame.KEYDOWN:
                     if (event.key == pygame.K_RETURN or event.key == pygame.K_i) and not quitter.quitting:
@@ -52,6 +60,34 @@ def main():
                     if event.key == pygame.K_ESCAPE:
                         #If we're quitting, stop trying. If we aren't, start trying
                         quitter.quitting = not quitter.quitting
+                       
+                    #Manage player movement, even if the game is paused
+                    #To prepare for when the game is not paused 
+                    if event.key == pygame.K_LEFT:
+                        player.moving[0] = True
+                    if event.key == pygame.K_RIGHT:
+                        player.moving[1] = True
+                    if event.key == pygame.K_UP:
+                        player.moving[2] = True
+                    if event.key == pygame.K_DOWN:
+                        player.moving[3] = True
+                    if event.key == pygame.K_SPACE or event.key == pygame.K_z:
+                        player.attacking = True
+                       
+                        
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT:
+                        player.moving[0] = False                
+                    if event.key == pygame.K_RIGHT:
+                        player.moving[1] = False
+                    if event.key == pygame.K_UP:
+                        player.moving[2] = False
+                    if event.key == pygame.K_DOWN:
+                        player.moving[3] = False   
+                    if event.key == pygame.K_SPACE or event.key == pygame.K_z:
+                        player.attacking = False
+                           
+                           
                                      
                 #If the user clicked   
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -77,36 +113,38 @@ def main():
                     done = quitter.quit_check(screen, pygame.mouse.get_pos())
                     
             #If there are no menus, or quit prompts, or anything showing, run normally
-            elif game_state == 0:            
+            elif game_state == 0:  
+                
+                player.updating = True          
             
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        player.go_left()
+                        player.moving[0] = True
                     if event.key == pygame.K_RIGHT:
-                        player.go_right()
+                        player.moving[1] = True
                     if event.key == pygame.K_UP:
-                        player.go_up()
+                        player.moving[2] = True
                     if event.key == pygame.K_DOWN:
-                        player.go_down()
+                        player.moving[3] = True
                     if event.key == pygame.K_SPACE or event.key == pygame.K_z:
+                        #If "SPACE" or "Z" is pressed, attack!
                         player.attacking = True 
                     if event.key == pygame.K_RETURN or event.key == pygame.K_i:
+                        #If "Enter" or "I" is pressed, bring up the inventory
                         player.showing_inventory = True      
                     if event.key == pygame.K_ESCAPE:
-                        player.attacking = False
-                        #Switch the state of quitter.quitting:
+                        #Switch the state of quitter.quitting to true
                         quitter.quitting = True  
                             
                 if event.type == pygame.KEYUP:
-                    if not quitter.quitting:
-                        if event.key == pygame.K_LEFT:
-                            player.stop_left()                
-                        if event.key == pygame.K_RIGHT:
-                            player.stop_right()
-                        if event.key == pygame.K_UP:
-                            player.stop_up()
-                        if event.key == pygame.K_DOWN:
-                            player.stop_down()            
+                    if event.key == pygame.K_LEFT:
+                        player.moving[0] = False                
+                    if event.key == pygame.K_RIGHT:
+                        player.moving[1] = False
+                    if event.key == pygame.K_UP:
+                        player.moving[2] = False
+                    if event.key == pygame.K_DOWN:
+                        player.moving[3] = False      
                     if event.key == pygame.K_SPACE or event.key == pygame.K_z:
                         player.attacking = False
                         
@@ -114,10 +152,12 @@ def main():
                 game_state = 0
                           
         player.update(screen, frame)
+        current_room.update(screen, frame)
                 
         screen.fill(WHITE)
         
-        player.draw(screen, frame)
+        current_room.draw(screen)
+        player.draw(screen)
         
         if quitter.quitting:
             quitter.draw(screen)  
@@ -125,7 +165,6 @@ def main():
         frame += 1
         if frame > 20:
             frame = 0
-            print("frames reset")
             
         if player.showing_inventory:
             game_state = 1

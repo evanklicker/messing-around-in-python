@@ -6,7 +6,7 @@ class Shield():
     def __init__(self, player):
         
         
-        self.image= pygame.image.load("./Items/woodenshield.png").convert()
+        self.image= pygame.image.load("./items/woodenshield.png").convert()
         
         self.image.set_colorkey(WHITE)
         

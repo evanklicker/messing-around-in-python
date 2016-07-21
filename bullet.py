@@ -21,7 +21,7 @@ class Bullet():
         self.end_posy = self.start_posy
         
         #This is to prevent the bullet from starting inside the player
-        self.offset = player.radius
+        self.offset = player.rect.width / 2
         
         #Each bullet has a frame counter separate from the main loop's
         #This is so they can expire and be created without having to rely on the main loop
@@ -31,15 +31,15 @@ class Bullet():
         #This is how many frames it takes for the bullets to "die"
         self.expiration_frame = 9
         
-        #The bullets are create alive
+        #The bullets are created alive
         self.alive = True
         
-    def draw(self, screen):
+    def draw(self, screen, x_offset = 0, y_offset = 0):
         
         #Easy enough
         pygame.draw.line(screen, self.color, [self.start_posx, self.start_posy], [self.end_posx, self.end_posy], self.thickness)
             
-    def update(self, screen, player, frame):
+    def update(self, screen, frame):
         
         #Move the frame counter forward
         if self.frame_temp != frame:
@@ -89,8 +89,8 @@ class Bullet():
                 y_determinant = 1
                 
         #Calculate where to draw the bullet based on previous position, as well as the determinants, frame count, offset, and bullet length
-        self.start_posx = self.start_posx + (x_determinant * (self.frame + self.offset))
-        self.start_posy = self.start_posy + (y_determinant * (self.frame + self.offset))
+        self.start_posx = self.start_posx   + (x_determinant * (self.frame + self.offset))
+        self.start_posy = self.start_posy   + (y_determinant * (self.frame + self.offset))
         self.end_posx   = self.start_posx   + (x_determinant * (self.frame + self.offset + self.length))
         self.end_posy   = self.start_posy   + (y_determinant * (self.frame + self.offset + self.length))
         

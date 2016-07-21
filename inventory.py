@@ -166,7 +166,7 @@ class Slot(pygame.sprite.Sprite):
         super().__init__()
         
         #It's just a white image
-        Slot.image = pygame.image.load("./Items/inventory_slot_background.png")
+        Slot.image = pygame.image.load("./items/inventory_slot_background.png")
         
         #This attribute holds the contained item's image, if it exists
         self.image_overlay = None

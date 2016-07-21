@@ -8,7 +8,7 @@ class Sword(pygame.sprite.Sprite):
     def __init__(self, player):
         
         #This loads the image and converts it to a format pygame can work with easier
-        self.image= pygame.image.load("./Items/woodensword_1.png").convert()
+        self.image= pygame.image.load("./items/woodensword_1.png").convert()
         #Image courtesy of opengameart.com
         #http://opengameart.org/content/swords-0
         
@@ -62,12 +62,12 @@ class Sword(pygame.sprite.Sprite):
         #And the inventory's static sword
         screen.blit(self.image, pos)
                     
-    def attack_draw(self, screen, frame):
+    def attack_draw(self, screen, x_offset = 0, y_offset = 0):
         
         #We always draw the rotated image, even if the sword isn't rotated. The update method should account for that.
 
         if self.attacking:
-            screen.blit(self.rotated_image, [self.rect.x + self.x_offset, self.rect.y + self.y_offset])
+            screen.blit(self.rotated_image, [self.rect.x + self.x_offset + x_offset, self.rect.y + self.y_offset + y_offset])
 
     def update(self, screen, player, frame):
         """Change the sword's position and possilby direction based on the player's positioning, as well as the sword's own frame counter"""
