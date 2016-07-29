@@ -52,7 +52,11 @@ class Tile(pygame.sprite.Sprite):
         
         #Draw the contained entity, but do it in the middle of the square, instead of the top left
         if self.contained_entity:
-            self.contained_entity.draw(screen, (self.rect.width - self.contained_entity.rect.width / 2), (self.rect.height - self.contained_entity.rect.height / 2))
+            print("There's something here...")
+            if self.contained_entity.draw(screen, (self.rect.width - self.contained_entity.rect.width / 2), (self.rect.height - self.contained_entity.rect.height / 2)):
+                print("FOUND PLAYER")
+            else:
+                print("Found nothing :/")
         
     def update(self, screen, frame):
         

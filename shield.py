@@ -23,12 +23,12 @@ class Shield():
         self.attack  = 0
         
     def draw(self, screen, pos):
-		
-		#If we later add some difference in what the player looks like based on the equipped shield
-		#This method will be called only by the inventory class. Until then, it's used by both
+        
+        #If we later add some difference in what the player looks like based on the equipped shield
+        #This method will be called only by the inventory class. Until then, it's used by both
         screen.blit(self.image, pos)
         
     def update(self, screen, player, frame):
-		
+        
         #Since we aren't really drawing it to the screen, there's nothing to update
         pass

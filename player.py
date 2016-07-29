@@ -1,5 +1,8 @@
 import pygame
 import math
+import copy
+import time
+import queue
 import bullet as b
 import sword as sw
 import inventory as i
@@ -43,14 +46,12 @@ class Player(pygame.sprite.Sprite):
         #Create our player image
         self.get_image()
         
-        #
+        #Align the walking frames, and get our position
         self.image = self.walking_frames_r[0]
         self.rect = self.image.get_rect()
         
-        #Just so we don't run into anything weird, let's start a bit off the origin
-        self.rect.x = 100
-        self.rect.y = 100
-        
+        #A queue to hold our movements
+        self.movement_queue = []
         
         #Attributes for attacking
         self.attack_cooldown = 20 #frames
@@ -79,27 +80,56 @@ class Player(pygame.sprite.Sprite):
             
     #Self explanatory
     def go_left(self):
-        self.change_x += -self.move_speed
-        self.speed_check()
         self.direction = "L"
+        column, row = self.get_room_pos()
+        
+        if not self.collision_check():
+            self.room.tile_list[column - 1][row].get_entity(self)
+            self.room.tile_list[column][row].lose_entity()
+            
+        self.movement_cooled_down = self.movement_cooling_down(30)
          
     def go_right(self):
-        self.change_x += self.move_speed
-        self.speed_check()
         self.direction = "R"
-            
+        column, row = self.get_room_pos()
+        
+        if not self.collision_check():
+            self.room.tile_list[column + 1][row].get_entity(self)
+            self.room.tile_list[column][row].lose_entity()
+
+        self.movement_cooled_down = self.movement_cooling_down(30)
+
     def go_up(self):
-        self.change_y += -self.move_speed
-        self.speed_check()
         self.direction = "U"
-         
+        column, row = self.get_room_pos()
+        
+        if not self.collision_check():
+            self.room.tile_list[column][row - 1].get_entity(self)
+            self.room.tile_list[column][row].lose_entity()
+        
+        self.movement_cooled_down = self.movement_cooling_down(30)
+        
     def go_down(self):
-        self.change_y += self.move_speed
-        self.speed_check()
         self.direction = "D"
-          
+        column, row = self.get_room_pos()
+        
+        if not self.collision_check():
+            self.room.tile_list[column][row + 1].get_entity(self)
+            self.room.tile_list[column][row].lose_entity()
+            
+        self.movement_cooled_down = self.movement_cooling_down(30)
+        
+    def get_room_pos(self):
+        for column in range(self.room.tile_list.__len__()):
+            for row in range(self.room.tile_list[column].__len__()):
+                if self.room.tile_list[column][row] == self:
+                    return [column, row]
+        return [0, 0] 
+        
+        
+        
     #These functions basically just reverse the ones from above        
-    def stop_left(self):
+"""   def stop_left(self):
         if self.change_x != 0:
             self.change_x += self.move_speed
         self.speed_check()
@@ -118,7 +148,7 @@ class Player(pygame.sprite.Sprite):
         if self.change_y != 0:
             self.change_y += -self.move_speed
         self.speed_check()
-        
+"""        
     def stop(self):
         #This stops all movement, period
         self.change_x = 0
@@ -141,28 +171,62 @@ class Player(pygame.sprite.Sprite):
     def change_room(self, room):
         self.room = room
         
+    def collision_check(self, direction="R"):
         
+        future_player = copy.copy(self)
+        if self.direction == "L":
+            future_player.rect.x -= self.rect.width
+            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+                return True
+            else:
+                return False
+        
+        elif self.direction == "R" :
+            future_player.rect.x += self.rect.width
+            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+                return True
+            else:
+                return False
+                
+        elif self.direction == "U":
+            future_player.rect.y -= self.rect.width
+            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+                return True
+            else:
+                return False                
+        
+        elif self.direction == "D":
+            future_player.rect.y += self.rect.width
+            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+                return True
+            else:
+                return False    
+                
+    def movement_cooling_down(self, frame_left = 0):
+        if frame_left > 0:
+            return movement_cooling_down(frame_left - 1)
+        return True
+                    
     def update(self, screen, frame, current_room = None):
         
         #If we are supposed to be updating...
         if self.updating:
             
-            if self.moving[0]:
-                self.go_left()
-            else:
-                self.stop_left()
-            if self.moving[1]:
-                self.go_right()
-            else:
-                self.stop_right()
-            if self.moving[2]:
-                self.go_up()
-            else:
-                self.stop_up()
-            if self.moving[3]:
-                self.go_down()
-            else:
-                self.stop_down()
+            if self.movement_cooled_down:
+                if self.moving[0]:
+                    self.movement_queue.append(self.go_left())
+                if self.moving[1]:
+                    self.go_right()
+                else:
+                    self.stop_right()
+                if self.moving[2]:
+                    self.go_up()
+                else:
+                    self.stop_up()
+                if self.moving[3]:
+                    self.go_down()
+                else:
+                    self.stop_down()
                 
             """Code block for mainting on-screen position"""
             x_limit, y_limit = screen.get_size()
@@ -277,7 +341,9 @@ class Player(pygame.sprite.Sprite):
             screen.blit(self.image, [self.rect.x + x_offset, self.rect.y + y_offset])
             
         if self.showing_inventory:
-            self.inventory.draw(screen)    
+            self.inventory.draw(screen)
+            
+        return True    
             
     def attack(self, screen, frame):
         
@@ -310,8 +376,8 @@ class Player(pygame.sprite.Sprite):
                 self.frame = 0
             
     def get_image(self):
-		#This loads and creates the walking frames to be used by the player
-		
+        #This loads and creates the walking frames to be used by the player
+        
         sprite_sheet = ss.SpriteSheet("./player/mage_walking_sheet.png")
         #Spritesheet courtesy of Redshrike from opengameart.org
         #http://opengameart.org/content/four-characters-my-lpc-entries

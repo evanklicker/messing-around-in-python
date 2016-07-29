@@ -2,6 +2,7 @@
 
 from map import *
 import pygame
+BLACK = (  0,   0,   0)
 
 class Map1(Map):
     def __init__(self, screen):
@@ -23,12 +24,12 @@ class Map1(Map):
         #This makes the first and last tile of each row the same (brick), and everything in between something else (grass)
         body_image = pygame.image.load("./environment/basic_tileset/grass_tile.png").convert()
         for i in range(13):
-			
-			#Add the brick for the top
+            
+            #Add the brick for the top
             tile_images.append(edge_image)
             
             for j in range(8):
-				#Add the grass for the middle
+                #Add the grass for the middle
                 tile_images.append(body_image)
                 
             #Add the brick for the bottom
@@ -43,12 +44,12 @@ class Map1(Map):
         #Fill the screen with tiles
         index = 0
         for column in range(15):
-			
-			#Refresh the nested part of the list
+            
+            #Refresh the nested part of the list
             nested_part = []
             for row in range(10):
-				
-				#Get the next image and create the tile
+                
+                #Get the next image and create the tile
                 image = tile_images[index]
                 tile = Tile(screen, column, row, image)
                 
@@ -67,11 +68,48 @@ class Map1(Map):
                 
             #When the inner loop is finished, we add the nested part of the list to the main list    
             self.tile_list.append(nested_part)
+            
+    def entity_left(self, entity):
+        
+        for column in range(self.tile_list.__len__()):
+            for row in range(self.tile_list[column].__len__()):
+                if self.tile_list[column][row].contained_entity == entity:
+                    self.tile_list[column][row].lose_entity()
+                    self.tile_list[column - 1][row].get_entity(entity)
+        
+            
+    def entity_right(self):
+		
+        for column in range(self.tile_list.__len__()):
+            for row in range(self.tile_list[column].__len__()):
+                if self.tile_list[column][row].contained_entity == entity:
+                    self.tile_list[column][row].lose_entity()
+                    self.tile_list[column + 1][row].get_entity(entity)
                 
+    def entity_up(self):
+		
+        for column in range(self.tile_list.__len__()):
+            for row in range(self.tile_list[column].__len__()):
+                if self.tile_list[column][row].contained_entity == entity:
+                    self.tile_list[column][row].lose_entity()
+                    self.tile_list[column][row - 1].get_entity(entity)
+        
+    def entity_down(self):           
+		 
+        for column in range(self.tile_list.__len__()):
+            for row in range(self.tile_list[column].__len__()):
+                if self.tile_list[column][row].contained_entity == entity:
+                    self.tile_list[column][row].lose_entity()
+                    self.tile_list[column][row + 1].get_entity(entity)                
     def draw(self, screen):
         
         #Draw the tiles
         self.tile_group.draw(screen)
+        
+        for tiles in self.tile_list:
+            for tile in tiles:
+                pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x + tile.rect.width, tile.rect.y])
+                pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x, tile.rect.y + tile.rect.height])
         
     def update(self, screen, frame):
         
