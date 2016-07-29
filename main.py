@@ -52,7 +52,7 @@ def main():
         screen.fill(WHITE)
         
         current_room.draw(screen)
-        player.draw(screen)
+        #player.draw(screen)
         
         if quitter.quitting:
             quitter.draw(screen)  

@@ -87,7 +87,7 @@ class Player(pygame.sprite.Sprite):
             self.room.tile_list[column - 1][row].get_entity(self)
             self.room.tile_list[column][row].lose_entity()
             
-        self.movement_cooled_down = self.movement_cooling_down(30)
+        #self.movement_cooled_down = self.movement_cooling_down(30)
          
     def go_right(self):
         self.direction = "R"
@@ -97,7 +97,7 @@ class Player(pygame.sprite.Sprite):
             self.room.tile_list[column + 1][row].get_entity(self)
             self.room.tile_list[column][row].lose_entity()
 
-        self.movement_cooled_down = self.movement_cooling_down(30)
+        #self.movement_cooled_down = self.movement_cooling_down(30)
 
     def go_up(self):
         self.direction = "U"
@@ -107,7 +107,7 @@ class Player(pygame.sprite.Sprite):
             self.room.tile_list[column][row - 1].get_entity(self)
             self.room.tile_list[column][row].lose_entity()
         
-        self.movement_cooled_down = self.movement_cooling_down(30)
+        #self.movement_cooled_down = self.movement_cooling_down(30)
         
     def go_down(self):
         self.direction = "D"
@@ -117,7 +117,7 @@ class Player(pygame.sprite.Sprite):
             self.room.tile_list[column][row + 1].get_entity(self)
             self.room.tile_list[column][row].lose_entity()
             
-        self.movement_cooled_down = self.movement_cooling_down(30)
+        #self.movement_cooled_down = self.movement_cooling_down(30)
         
     def get_room_pos(self):
         for column in range(self.room.tile_list.__len__()):
@@ -129,7 +129,7 @@ class Player(pygame.sprite.Sprite):
         
         
     #These functions basically just reverse the ones from above        
-"""   def stop_left(self):
+    """   def stop_left(self):
         if self.change_x != 0:
             self.change_x += self.move_speed
         self.speed_check()
@@ -148,7 +148,8 @@ class Player(pygame.sprite.Sprite):
         if self.change_y != 0:
             self.change_y += -self.move_speed
         self.speed_check()
-"""        
+    """      
+      
     def stop(self):
         #This stops all movement, period
         self.change_x = 0
@@ -201,33 +202,28 @@ class Player(pygame.sprite.Sprite):
                 return True
             else:
                 return False    
-                
+    
+    """To be added at some point            
     def movement_cooling_down(self, frame_left = 0):
         if frame_left > 0:
             return movement_cooling_down(frame_left - 1)
         return True
-                    
+    """
+    
     def update(self, screen, frame, current_room = None):
         
         #If we are supposed to be updating...
         if self.updating:
-            
-            if self.movement_cooled_down:
-                if self.moving[0]:
-                    self.movement_queue.append(self.go_left())
-                if self.moving[1]:
-                    self.go_right()
-                else:
-                    self.stop_right()
-                if self.moving[2]:
-                    self.go_up()
-                else:
-                    self.stop_up()
-                if self.moving[3]:
-                    self.go_down()
-                else:
-                    self.stop_down()
                 
+            if self.moving[0]:
+                self.go_left()
+            if self.moving[1]:
+                self.go_right()
+            if self.moving[2]:
+                self.go_up()
+            if self.moving[3]:
+                self.go_down()
+             
             """Code block for mainting on-screen position"""
             x_limit, y_limit = screen.get_size()
             newx = self.rect.x + self.change_x
