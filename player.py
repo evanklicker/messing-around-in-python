@@ -24,9 +24,8 @@ class Player(pygame.sprite.Sprite):
         #Based on 
         self.draw_first = False
         
-        #How fast the player moves
-        self.move_speed = 3
         #The higher, the slower, oddly enough
+        #Should be called self.walking_slowness, haha
         self.walking_speed = 5
         
         #This will be false if the game is paused
@@ -60,10 +59,6 @@ class Player(pygame.sprite.Sprite):
         self.frame = 0
         self.frame_temp = 0
         
-        #Attributes to keep track of player location
-        self.change_x = 0
-        self.change_y = 0
-        
         #Let's get some items! We need an inventory first, though
         self.inventory = i.Inventory(screen)
         self.showing_inventory = False
@@ -81,91 +76,27 @@ class Player(pygame.sprite.Sprite):
     #Self explanatory
     def go_left(self):
         self.direction = "L"
-        column, row = self.get_room_pos()
+        self.room.entity_left(self)
         
-        if not self.collision_check():
-            self.room.tile_list[column - 1][row].get_entity(self)
-            self.room.tile_list[column][row].lose_entity()
-            
-        #self.movement_cooled_down = self.movement_cooling_down(30)
-         
     def go_right(self):
         self.direction = "R"
-        column, row = self.get_room_pos()
+        self.room.entity_right(self)
         
-        if not self.collision_check():
-            self.room.tile_list[column + 1][row].get_entity(self)
-            self.room.tile_list[column][row].lose_entity()
-
-        #self.movement_cooled_down = self.movement_cooling_down(30)
-
     def go_up(self):
         self.direction = "U"
-        column, row = self.get_room_pos()
-        
-        if not self.collision_check():
-            self.room.tile_list[column][row - 1].get_entity(self)
-            self.room.tile_list[column][row].lose_entity()
-        
-        #self.movement_cooled_down = self.movement_cooling_down(30)
+        self.room.entity_up(self)
         
     def go_down(self):
         self.direction = "D"
-        column, row = self.get_room_pos()
-        
-        if not self.collision_check():
-            self.room.tile_list[column][row + 1].get_entity(self)
-            self.room.tile_list[column][row].lose_entity()
+        self.room.entity_down(self)
             
-        #self.movement_cooled_down = self.movement_cooling_down(30)
-        
     def get_room_pos(self):
         for column in range(self.room.tile_list.__len__()):
             for row in range(self.room.tile_list[column].__len__()):
-                if self.room.tile_list[column][row] == self:
+                if self.room.tile_list[column][row].contained_entity == self:
                     return [column, row]
         return [0, 0] 
-        
-        
-        
-    #These functions basically just reverse the ones from above        
-    """   def stop_left(self):
-        if self.change_x != 0:
-            self.change_x += self.move_speed
-        self.speed_check()
-    
-    def stop_right(self):
-        if self.change_x != 0:
-            self.change_x += -self.move_speed
-        self.speed_check()
-        
-    def stop_up(self):
-        if self.change_y != 0:
-            self.change_y += self.move_speed
-        self.speed_check()
-        
-    def stop_down(self):
-        if self.change_y != 0:
-            self.change_y += -self.move_speed
-        self.speed_check()
-    """      
-      
-    def stop(self):
-        #This stops all movement, period
-        self.change_x = 0
-        self.change_y = 0
-        self.attacking = False
-        
-    def speed_check(self):
-        if self.change_x > self.move_speed:
-            self.change_x = self.move_speed
-        elif self.change_x < -self.move_speed:
-            self.change_x = -self.move_speed
-        if self.change_y >= self.move_speed:
-            self.change_y = self.move_speed
-        elif self.change_y < -self.move_speed:
-            self.change_y = -self.move_speed
-            
+                
     def get_item(self, item):
         self.inventory.get_item(item)
         
@@ -213,6 +144,7 @@ class Player(pygame.sprite.Sprite):
     def update(self, screen, frame, current_room = None):
         
         #If we are supposed to be updating...
+        print("Player beginning update!")
         if self.updating:
                 
             if self.moving[0]:
@@ -223,83 +155,14 @@ class Player(pygame.sprite.Sprite):
                 self.go_up()
             if self.moving[3]:
                 self.go_down()
-             
-            """Code block for mainting on-screen position"""
-            x_limit, y_limit = screen.get_size()
-            newx = self.rect.x + self.change_x
-            newy = self.rect.y + self.change_y
-         
-            #If our x value is within the bounds of the screen:
-            if newx >= 0 and newx < x_limit - self.rect.width:
-                self.rect.x = newx
-            
-            #If the x value isn't:
-
-            elif newx < 0:
-                self.rect.x = 0
-            elif newx > x_limit - self.rect.width:
-                self.rect.x = x_limit - self.rect.width
-             
-            #If our y value is within the bounds of the screen:
-            if newy >= 0 and newy  < y_limit - self.rect.height:
-                self.rect.y = newy
-        
-            #If the y value isn't:
-            elif newy < 0:
-                self.rect.y = 0.
-            elif newy >= y_limit - self.rect.height:
-                self.rect.y = y_limit - self.rect.height
-            
-            """Code block for maintaining walking frames""" 
-            #(And the player's image layers)
-                               
-            if self.direction == "L":
-                walking_frame = (self.rect.x // self.move_speed) % len(self.walking_frames_l)
-                self.image = self.walking_frames_l[walking_frame]
-                self.draw_first = False
-            elif self.direction == "R":
-                walking_frame = (self.rect.x // self.move_speed) % len(self.walking_frames_r)
-                self.image = self.walking_frames_r[walking_frame]
-                self.draw_first = True
-            elif self.direction == "U":
-                walking_frame = (self.rect.y // self.move_speed) % len(self.walking_frames_u)
-                self.image = self.walking_frames_u[walking_frame]
-                self.draw_first = False
-            elif self.direction == "D":
-                walking_frame = (self.rect.y // self.move_speed) % len(self.walking_frames_d)
-                self.image = self.walking_frames_d[walking_frame]
-                self.draw_first = True
                 
-            #Regardless of the image, we want it to be slightly smaller than the tile size, which happens to be 80 pixels
+            #Regardless of the image, we want it to be slightly smaller than the tile size, which happens to be 80x80 pixels
             self.image = pygame.transform.scale(self.image, [50, 70])
                 
             #This code checks to see whether or not the player should be attacking
             if self.attacking and self.equipped_main_hand:
                 self.attack(screen, frame)
                 
-        else:
-            self.stop()
-            
-        """Code block for managing sprite collisions""" 
-        """I don't think I'll need this code at all, but I'm going to keep it commented just in case"""
-        
-        """
-        block_hit_list = pygame.sprite.spritecollide(self, self.room.obstacle_list, False)
-        
-        for block in block_hit_list:
-            if self.direction == "L":
-                self.rect.left = block.rect.right
-                self.stop_left()
-            elif self.direction == "R":
-                self.rect.right = block.rect.left
-                self.stop_right()
-            elif self.direction == "U":
-                self.rect.top = block.rect.bottom
-                self.stop_up()
-            elif self.direction == "D":
-                self.rect.bottom = block.rect.top
-                self.stop_down()
-        """
                 
         #Checking to see if the bullets have expired. If not, update them!
         for bullet in self.bullet_list:

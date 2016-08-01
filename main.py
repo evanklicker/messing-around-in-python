@@ -20,16 +20,19 @@ def main():
     screen = pygame.display.set_mode(WINDOW_SIZE)
     
     pygame.display.set_caption("My Game")
+    pygame.key.set_repeat(1000, 1)
     
     room_list = []
     
     room = m.Map1(screen)
     room_list.append(room)
     
-    current_room = room_list[0]    
+    current_room = room_list[0]   
     
     player = p.Player(screen, current_room)
     quitter = q.Quit_box(screen)
+    
+    current_room.tile_list[5][5].get_entity(player)
     
     done = False
     
@@ -46,22 +49,15 @@ def main():
     while not done:
         game_state, done = handle_events(player, quitter, screen, game_state)
                           
-        #player.update(screen, frame)
         current_room.update(screen, frame)
                 
         screen.fill(WHITE)
         
         current_room.draw(screen)
-        #player.draw(screen)
         
         if quitter.quitting:
             quitter.draw(screen)  
-    
-    
-        index_x = random.randint(0, 14)
-        index_y = random.randint(0, 9)
-        current_room.tile_list[index_x][index_y].get_entity(player)
-        
+         
         frame += 1
         if frame > 20:
             frame = 0

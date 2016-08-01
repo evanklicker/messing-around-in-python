@@ -53,9 +53,9 @@ class Map1(Map):
                 image = tile_images[index]
                 tile = Tile(screen, column, row, image)
                 
-                #If we aren't supposed to be able to walk through the tile, put it in the obstacle list
+                #If we aren't supposed to be able to walk through the tile, set it as an obstacle
                 if image == edge_image:
-                    self.obstacle_list.add(tile)
+                    tile.is_obstacle = True
                     
                 #Put the tile in the sprite Group
                 self.tile_group.add(tile)
@@ -69,51 +69,3 @@ class Map1(Map):
             #When the inner loop is finished, we add the nested part of the list to the main list    
             self.tile_list.append(nested_part)
             
-    def entity_left(self, entity):
-        
-        for column in range(self.tile_list.__len__()):
-            for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity:
-                    self.tile_list[column][row].lose_entity()
-                    self.tile_list[column - 1][row].get_entity(entity)
-        
-            
-    def entity_right(self):
-		
-        for column in range(self.tile_list.__len__()):
-            for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity:
-                    self.tile_list[column][row].lose_entity()
-                    self.tile_list[column + 1][row].get_entity(entity)
-                
-    def entity_up(self):
-		
-        for column in range(self.tile_list.__len__()):
-            for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity:
-                    self.tile_list[column][row].lose_entity()
-                    self.tile_list[column][row - 1].get_entity(entity)
-        
-    def entity_down(self):           
-		 
-        for column in range(self.tile_list.__len__()):
-            for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity:
-                    self.tile_list[column][row].lose_entity()
-                    self.tile_list[column][row + 1].get_entity(entity)                
-    def draw(self, screen):
-        
-        #Draw the tiles
-        self.tile_group.draw(screen)
-        
-        for tiles in self.tile_list:
-            for tile in tiles:
-                pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x + tile.rect.width, tile.rect.y])
-                pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x, tile.rect.y + tile.rect.height])
-        
-    def update(self, screen, frame):
-        
-        #Update the tile group
-        #This will call the player's update method, as well as every other entity's, through the grapevine.
-        #But only after I make the movement constricted to tiles. For now, this update method won't do anything
-        self.tile_group.update(screen, frame)

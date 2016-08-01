@@ -1,4 +1,5 @@
 import pygame
+import queue
 
 def handle_events(player, quitter, screen, game_state=0, done=False):
     """
@@ -26,6 +27,9 @@ def handle_events(player, quitter, screen, game_state=0, done=False):
     
     """
     
+    #It's not a real queue, but it's going to act kinda like one
+    button_queue = []
+    
     
     for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -52,10 +56,13 @@ def handle_events(player, quitter, screen, game_state=0, done=False):
                     #To prepare for when the game is not paused 
                     if event.key == pygame.K_LEFT:
                         player.moving[0] = True
+                        button_queue.append(event.key)
                     if event.key == pygame.K_RIGHT:
                         player.moving[1] = True
+                        button_queue.append(event.key)
                     if event.key == pygame.K_UP:
                         player.moving[2] = True
+                        button_queue.append(event.key)
                     if event.key == pygame.K_DOWN:
                         player.moving[3] = True
                     if event.key == pygame.K_SPACE or event.key == pygame.K_z:
