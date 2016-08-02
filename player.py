@@ -49,8 +49,11 @@ class Player(pygame.sprite.Sprite):
         self.image = self.walking_frames_r[0]
         self.rect = self.image.get_rect()
         
-        #A queue to hold our movements
-        self.movement_queue = []
+        #Other misc movement attributes
+        self.standing_frame = 0
+        #Grab the width measurement for the room's tiles
+        self.walking_frame = self.room.tile_list[0][0].rect.width
+        self.can_move = True
         
         #Attributes for attacking
         self.attack_cooldown = 20 #frames
@@ -58,7 +61,8 @@ class Player(pygame.sprite.Sprite):
         self.attacking = False
         self.frame = 0
         self.frame_temp = 0
-        self.walking_frame = 0
+        
+        
         
         #Let's get some items! We need an inventory first, though
         self.inventory = i.Inventory(screen)
@@ -76,20 +80,32 @@ class Player(pygame.sprite.Sprite):
             
     #Self explanatory
     def go_left(self):
-        self.direction = "L"
-        self.room.entity_left(self)
+        
+        if self.can_move:
+            self.direction = "L"
+            self.room.entity_left(self)
+            self.can_move = False
         
     def go_right(self):
-        self.direction = "R"
-        self.room.entity_right(self)
+        
+        if self.can_move:
+            self.direction = "R"
+            self.room.entity_right(self)
+            self.can_move = False
         
     def go_up(self):
-        self.direction = "U"
-        self.room.entity_up(self)
+        
+        if self.can_move:
+            self.direction = "U"
+            self.room.entity_up(self)
+            self.can_move = False
         
     def go_down(self):
-        self.direction = "D"
-        self.room.entity_down(self)
+        
+        if self.can_move:
+            self.direction = "D"
+            self.room.entity_down(self)
+            self.can_move = False
             
     def get_room_pos(self):
         for column in range(self.room.tile_list.__len__()):
@@ -155,17 +171,29 @@ class Player(pygame.sprite.Sprite):
                 self.image_frames = self.walking_frames_u
             elif self.direction == "D":
                 self.image_frames = self.walking_frames_d
-                
+                      
             if frame == 0 or frame == 10:
-                self.walking_frame += 1
+                self.standing_frame += 1
                 
-            if self.walking_frame >= self.image_frames.__len__():
-                self.walking_frame = 0
-                
-            self.image = self.image_frames[self.walking_frame]
+            if self.standing_frame >= self.image_frames.__len__():
+                self.standing_frame = 0
+            
+            self.image = self.image_frames[self.standing_frame]
+            
+            if not self.can_move:
+                #It's -= 2 so he moves a little bit faster. It is hilarious to see it at 1, though
+                self.walking_frame -= 2
+                self.image = self.image_frames[self.walking_frame // 4 % self.image_frames.__len__()]
+                if self.walking_frame <= 0:
+                    #Grab any tile's width- specifically, the top-left tile. They're all the same, anyway
+                    self.walking_frame = self.room.tile_list[0][0].rect.width
+                    self.can_move = True
+          
                 
             #Regardless of the image, we want it to be slightly smaller than the tile size, which happens to be 80x80 pixels
             self.image = pygame.transform.scale(self.image, [50, 70])
+            
+            
                 
             #This code checks to see whether or not the player should be attacking
             if self.attacking and self.equipped_main_hand:

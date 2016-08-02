@@ -172,6 +172,19 @@ class Tile(pygame.sprite.Sprite):
             self.contained_entity.rect.x = self.rect.x + (self.rect.width - self.contained_entity.rect.width) / 3
             self.contained_entity.rect.y = self.rect.y + (self.rect.height - self.contained_entity.rect.height) / 3
             self.contained_entity.update(screen, frame)
+            
+            #This animates the player moving between tiles
+            if not self.contained_entity.can_move:
+                if self.contained_entity.direction == "L":
+                    self.contained_entity.rect.x += self.contained_entity.walking_frame
+                elif self.contained_entity.direction == "R":
+                    self.contained_entity.rect.x -= self.contained_entity.walking_frame
+                elif self.contained_entity.direction == "U":
+                    self.contained_entity.rect.y += self.contained_entity.walking_frame
+                elif self.contained_entity.direction == "D":
+                    self.contained_entity.rect.y -= self.contained_entity.walking_frame
+    
+    
         
     def get_entity(self, entity):
         
