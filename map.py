@@ -42,56 +42,70 @@ class Map():
                 
     def entity_left(self, entity):
         
+        player_found = False
+        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "L"):
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "L") and not player_found:
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column - 1][row].get_entity(entity)
+                    player_found = True
         
             
     def entity_right(self, entity):
-		
+        
+        player_found = False
+        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "R"):
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "R") and not player_found:
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column + 1][row].get_entity(entity)
+                    player_found = True
                 
     def entity_up(self, entity):
-		
+        
+        player_found = False
+        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "U"):
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "U") and not player_found:
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column][row - 1].get_entity(entity)
-        
+                    player_found = True
+                    
     def entity_down(self, entity):           
-		 
+        
+        player_found = False
+        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "D"):
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "D") and not player_found:
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column][row + 1].get_entity(entity)                
+                    player_found = True
     
     def draw(self, screen):
         
         """
         NOTE: I could have written this draw method two different ways.
         The way I did it, I loop through every tile and call its tile.draw() method.
-        I could have just called self.tile_group.draw(), and that would have put everything on the scree,
-        but it wouldn't put any entities on the screen. I'd have to loop through the tiles and draw things either way
+        I could have just called self.tile_group.draw(), and that would have put everything on the screen,
+        but it wouldn't put any entities on the screen. I'd have to loop through the tiles and draw things either way.
+        I add the entities to a separate draw list, so nothing from them gets left out- they are drawn very last
         """
+        entity_list = []
         
-        black = pygame.image.load("./environment/black.png")
-
         #This should draw all the tiles, as well as the player and enemies
         for tiles in self.tile_list:
             for tile in tiles:
-                tile.draw(screen)
+                entity_list.append(tile.draw(screen))
                 pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x + tile.rect.width, tile.rect.y])
                 pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x, tile.rect.y + tile.rect.height])
-                if tile.is_obstacle:
-                    tile.image = black
+                
+        for entity in entity_list:
+            if entity:
+                entity.draw(screen)
                 
         
     def update(self, screen, frame):
@@ -141,17 +155,22 @@ class Tile(pygame.sprite.Sprite):
         
         screen.blit(self.image, [self.rect.x, self.rect.y])
         
-        #Draw the contained entity, but do it in the middle of the square, instead of the top left
+        #Return the contained entity, so we can draw them after everything else is drawn
         if self.contained_entity:
-            self.contained_entity.draw(screen, (self.rect.width - self.contained_entity.rect.width / 2), (self.rect.height - self.contained_entity.rect.height / 2))
+            return self.contained_entity
 
+        else:
+            return None
         
     def update(self, screen, frame):
         
         #We only need to update if we have a creature to update
         if self.contained_entity:
-            self.contained_entity.rect.x = self.rect.x - (self.rect.width - self.contained_entity.rect.width) / 2
-            self.contained_entity.rect.y = self.rect.y - (self.rect.height - self.contained_entity.rect.height) / 2
+            #The numbers multiplied at the end are arbitrary, and are just there because they work
+            #I suspect that even though the image for the player entity is small, the rectangle containing it is not
+            #So that's why funky things are happening with these couple lines
+            self.contained_entity.rect.x = self.rect.x + (self.rect.width - self.contained_entity.rect.width) / 3
+            self.contained_entity.rect.y = self.rect.y + (self.rect.height - self.contained_entity.rect.height) / 3
             self.contained_entity.update(screen, frame)
         
     def get_entity(self, entity):

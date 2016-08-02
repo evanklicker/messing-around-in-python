@@ -20,7 +20,7 @@ def main():
     screen = pygame.display.set_mode(WINDOW_SIZE)
     
     pygame.display.set_caption("My Game")
-    pygame.key.set_repeat(1000, 1)
+    pygame.key.set_repeat(0)
     
     room_list = []
     

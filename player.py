@@ -58,6 +58,7 @@ class Player(pygame.sprite.Sprite):
         self.attacking = False
         self.frame = 0
         self.frame_temp = 0
+        self.walking_frame = 0
         
         #Let's get some items! We need an inventory first, though
         self.inventory = i.Inventory(screen)
@@ -103,7 +104,7 @@ class Player(pygame.sprite.Sprite):
     def change_room(self, room):
         self.room = room
         
-    def collision_check(self, direction="R"):
+    def collision_check(self):
         
         future_player = copy.copy(self)
         if self.direction == "L":
@@ -144,17 +145,24 @@ class Player(pygame.sprite.Sprite):
     def update(self, screen, frame, current_room = None):
         
         #If we are supposed to be updating...
-        print("Player beginning update!")
         if self.updating:
+            
+            if self.direction == "L":
+                self.image_frames = self.walking_frames_l
+            elif self.direction == "R":
+                self.image_frames = self.walking_frames_r
+            elif self.direction == "U":
+                self.image_frames = self.walking_frames_u
+            elif self.direction == "D":
+                self.image_frames = self.walking_frames_d
                 
-            if self.moving[0]:
-                self.go_left()
-            if self.moving[1]:
-                self.go_right()
-            if self.moving[2]:
-                self.go_up()
-            if self.moving[3]:
-                self.go_down()
+            if frame == 0 or frame == 10:
+                self.walking_frame += 1
+                
+            if self.walking_frame >= self.image_frames.__len__():
+                self.walking_frame = 0
+                
+            self.image = self.image_frames[self.walking_frame]
                 
             #Regardless of the image, we want it to be slightly smaller than the tile size, which happens to be 80x80 pixels
             self.image = pygame.transform.scale(self.image, [50, 70])
@@ -228,9 +236,10 @@ class Player(pygame.sprite.Sprite):
                 self.cooldown_down = False
             
             #Resetting the cooldown based on the players frames.
-            if self.frame == 19:
-                print(self.attacking)
+            #Something is wonky. This'll need to get fixed later
+            if self.frame == 17:
                 self.equipped_main_hand.attacking = False
+                self.attacking = False
                 self.cooldown_done = True
                 self.frame = 0
             
