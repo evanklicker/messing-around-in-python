@@ -42,49 +42,46 @@ class Map():
                 
     def entity_left(self, entity):
         
-        player_found = False
-        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "L") and not player_found:
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "L"):
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column - 1][row].get_entity(entity)
-                    player_found = True
+                    return False
+        return True
         
             
     def entity_right(self, entity):
         
-        player_found = False
-        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "R") and not player_found:
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "R"):
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column + 1][row].get_entity(entity)
-                    player_found = True
+                    return False
+        return True
+        
                 
     def entity_up(self, entity):
         
-        player_found = False
-        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "U") and not player_found:
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "U"):
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column][row - 1].get_entity(entity)
-                    player_found = True
+                    return False
+        return True
                     
     def entity_down(self, entity):           
         
-        player_found = False
-        
         for column in range(self.tile_list.__len__()):
             for row in range(self.tile_list[column].__len__()):
-                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "D") and not player_found:
+                if self.tile_list[column][row].contained_entity == entity and self.collision_check(entity, "D"):
                     self.tile_list[column][row].lose_entity()
                     self.tile_list[column][row + 1].get_entity(entity)                
-                    player_found = True
-    
+                    return False
+        return True
+        
     def draw(self, screen):
         
         """
@@ -96,13 +93,14 @@ class Map():
         """
         entity_list = []
         
-        #This should draw all the tiles, as well as the player and enemies
+        #This should draw all the tiles
         for tiles in self.tile_list:
             for tile in tiles:
                 entity_list.append(tile.draw(screen))
                 pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x + tile.rect.width, tile.rect.y])
                 pygame.draw.line(screen, BLACK, [tile.rect.x, tile.rect.y], [tile.rect.x, tile.rect.y + tile.rect.height])
                 
+        #And this should draw every entity
         for entity in entity_list:
             if entity:
                 entity.draw(screen)

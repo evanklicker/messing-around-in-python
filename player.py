@@ -1,8 +1,6 @@
 import pygame
 import math
 import copy
-import time
-import queue
 import bullet as b
 import sword as sw
 import inventory as i
@@ -17,22 +15,15 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, screen, current_room):
         pygame.sprite.Sprite.__init__(self)
         
-        #Possible directions are Left (L), Right (R), Up (U), Down (D), Left-Up (LU), Left-Down (LD), Right-Up (RU), and Right-Down (RD)
-        #The diagonal directions will be leaving here shortly
+        #Possible directions are Left (L), Right (R), Up (U), Down (D)
         self.direction = "R"
         
         #Based on 
         self.draw_first = False
         
-        #The higher, the slower, oddly enough
-        #Should be called self.walking_slowness, haha
-        self.walking_speed = 5
-        
         #This will be false if the game is paused
         self.updating = False
-        #Booleans for whether the player is moving Left, Right, Up, or Down
-        self.moving = [False, False, False, False]
-        
+
         #Player walking images
         self.walking_frames_u = []
         self.walking_frames_d = []
@@ -51,9 +42,11 @@ class Player(pygame.sprite.Sprite):
         
         #Other misc movement attributes
         self.standing_frame = 0
+        self.move_speed = 2
+        self.can_move = True
+        
         #Grab the width measurement for the room's tiles
         self.walking_frame = self.room.tile_list[0][0].rect.width
-        self.can_move = True
         
         #Attributes for attacking
         self.attack_cooldown = 20 #frames
@@ -61,8 +54,6 @@ class Player(pygame.sprite.Sprite):
         self.attacking = False
         self.frame = 0
         self.frame_temp = 0
-        
-        
         
         #Let's get some items! We need an inventory first, though
         self.inventory = i.Inventory(screen)
@@ -83,29 +74,25 @@ class Player(pygame.sprite.Sprite):
         
         if self.can_move:
             self.direction = "L"
-            self.room.entity_left(self)
-            self.can_move = False
+            self.can_move = self.room.entity_left(self)
         
     def go_right(self):
         
         if self.can_move:
             self.direction = "R"
-            self.room.entity_right(self)
-            self.can_move = False
+            self.can_move = self.room.entity_right(self)
         
     def go_up(self):
         
         if self.can_move:
             self.direction = "U"
-            self.room.entity_up(self)
-            self.can_move = False
+            self.can_move = self.room.entity_up(self)            
         
     def go_down(self):
         
         if self.can_move:
             self.direction = "D"
-            self.room.entity_down(self)
-            self.can_move = False
+            self.can_move = self.room.entity_down(self)            
             
     def get_room_pos(self):
         for column in range(self.room.tile_list.__len__()):
@@ -122,41 +109,34 @@ class Player(pygame.sprite.Sprite):
         
     def collision_check(self):
         
-        future_player = copy.copy(self)
+        future_entity = copy.copy(self)
         if self.direction == "L":
-            future_player.rect.x -= self.rect.width
-            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+            future_entity.rect.x -= self.rect.width
+            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
                 return True
             else:
                 return False
         
         elif self.direction == "R" :
-            future_player.rect.x += self.rect.width
-            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+            future_entity.rect.x += self.rect.width
+            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
                 return True
             else:
                 return False
                 
         elif self.direction == "U":
-            future_player.rect.y -= self.rect.width
-            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+            future_entity.rect.y -= self.rect.width
+            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
                 return True
             else:
                 return False                
         
         elif self.direction == "D":
-            future_player.rect.y += self.rect.width
-            if pygame.sprite.spritecollide(future_player, self.room.obstacle_list, False).__len__() > 0:
+            future_entity.rect.y += self.rect.width
+            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
                 return True
             else:
                 return False    
-    
-    """To be added at some point            
-    def movement_cooling_down(self, frame_left = 0):
-        if frame_left > 0:
-            return movement_cooling_down(frame_left - 1)
-        return True
-    """
     
     def update(self, screen, frame, current_room = None):
         
@@ -181,9 +161,9 @@ class Player(pygame.sprite.Sprite):
             self.image = self.image_frames[self.standing_frame]
             
             if not self.can_move:
-                #It's -= 2 so he moves a little bit faster. It is hilarious to see it at 1, though
-                self.walking_frame -= 2
-                self.image = self.image_frames[self.walking_frame // 4 % self.image_frames.__len__()]
+                #Move_speed is at 2 so he moves a bit faster. It is hilarious to see it at 1, though
+                self.walking_frame -= self.move_speed
+                self.image = self.image_frames[-(self.walking_frame // 5 % self.image_frames.__len__())]
                 if self.walking_frame <= 0:
                     #Grab any tile's width- specifically, the top-left tile. They're all the same, anyway
                     self.walking_frame = self.room.tile_list[0][0].rect.width
@@ -238,7 +218,8 @@ class Player(pygame.sprite.Sprite):
         if self.showing_inventory:
             self.inventory.draw(screen)
             
-        return True    
+        return True   
+         
             
     def attack(self, screen, frame):
         
