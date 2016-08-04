@@ -5,6 +5,7 @@ import quitter as q
 import map_list as m
 from event_handler import *
 
+
 BLACK = (  0,   0,   0)
 BROWN = (130,  94,  35)
 WHITE = (255, 255, 255)
@@ -13,7 +14,7 @@ RED   = (255,   0,   0)
 BLUE  = (  0,   0, 255)
     
 def main():
-    
+  
     pygame.init()
     
     WINDOW_SIZE = (1200, 800)

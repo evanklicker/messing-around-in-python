@@ -27,22 +27,24 @@ def handle_events(player, quitter, screen, game_state=0, done=False):
     
     """ 
     
-    for important_event in pygame.event.get():
-        if important_event.type == pygame.QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             done = True
                 
         #I'm going to run two different event loops, to keep things organized
         #If 'game_state' is greater than one, the loop is going to handle anything that happens during a paused moment
         #I'm putting it first because I think those screens should have priority, if any issues come up
         
+        pygame.key.set_repeat(100, 1)
+        
         #If the user clicked   
-        if important_event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN:
                 
             #Because we are almost certainly going to need it
             pos = pygame.mouse.get_pos()
                
             #And the click was a left click
-            if important_event.button == 1:
+            if event.button == 1:
                         
                 #And they are considering quitting
                 if quitter.quitting:
@@ -55,13 +57,81 @@ def handle_events(player, quitter, screen, game_state=0, done=False):
                     #Select an item
                     player.inventory.select_item(pos)                       
                         
-        if important_event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP:
             done = quitter.quit_check(screen, pygame.mouse.get_pos())
             
-        pygame.event.pump()
-     
-        event = pygame.key.get_pressed()  
+        #Disregard the rest of the events
+        #pygame.event.pump()
+        
+        #Instead of gettting the whole event list, we just check to see when a button is pressed
+        #event = pygame.key.get_pressed()  
+
+
+        if game_state >= 1:  
+                
+            player.updating = False
+                
+            if event.type == pygame.KEYDOWN:
+                    
+                if event.key == pygame.K_RETURN or event.key == pygame.K_i and not quitter.quitting:
+                    player.showing_inventory = False
+                       
+                if event.key == pygame.K_ESCAPE:
+                    #If we're quitting, stop trying. If we aren't, start trying
+                    quitter.quitting = not quitter.quitting
+                       
+        #If there are no menus, or quit prompts, or anything showing, run normally
+        elif game_state == 0:  
+                
+            player.updating = True  
             
+            if event.type == pygame.KEYDOWN:        
+                
+                if event.key == pygame.K_LEFT:
+                    player.moving[0] = True
+                        
+                elif event.key == pygame.K_RIGHT:
+                    player.moving[1] = True
+                        
+                elif event.key == pygame.K_UP:
+                    player.moving[2] = True
+                    
+                elif event.key == pygame.K_DOWN:
+                    player.moving[3] = True
+                    
+                if event.key == pygame.K_SPACE or event.key == pygame.K_z:
+                    #If "SPACE" or "Z" is pressed, attack!
+                    player.attacking = True 
+                        
+                if event.key == pygame.K_RETURN or event.key == pygame.K_i:
+                    #If "Enter" or "I" is pressed, bring up the inventory
+                    player.showing_inventory = True   
+                           
+                if event.key == pygame.K_ESCAPE:
+                    #Switch the state of quitter.quitting to true
+                    quitter.quitting = True  
+                    
+            if event.type == pygame.KEYUP:        
+                
+                if event.key == pygame.K_LEFT:
+                    player.moving[0] = False
+                        
+                elif event.key == pygame.K_RIGHT:
+                    player.moving[1] = False
+                        
+                elif event.key == pygame.K_UP:
+                    player.moving[2] = False
+                    
+                elif event.key == pygame.K_DOWN:
+                    player.moving[3] = False
+                                    
+        else:
+            #This shouldn't ever happen. But if it does, I'm ready
+            game_state = 0
+
+
+
+        '''    
         if game_state >= 1:  
                 
             player.updating = False
@@ -81,13 +151,13 @@ def handle_events(player, quitter, screen, game_state=0, done=False):
             if event[pygame.K_LEFT]:
                 player.go_left()
                     
-            if event[pygame.K_RIGHT]:
+            elif event[pygame.K_RIGHT]:
                 player.go_right()
                     
-            if event[pygame.K_UP]:
+            elif event[pygame.K_UP]:
                 player.go_up()
                 
-            if event[pygame.K_DOWN]:
+            elif event[pygame.K_DOWN]:
                 player.go_down()
                 
             if event[pygame.K_SPACE] or event[pygame.K_z]:
@@ -105,5 +175,6 @@ def handle_events(player, quitter, screen, game_state=0, done=False):
         else:
             #This shouldn't ever happen. But if it does, I'm ready
             game_state = 0
-                
+        '''        
     return game_state, done
+

@@ -6,15 +6,17 @@ import sword as sw
 import inventory as i
 import shield as sh
 import spritesheet as ss
+import entity
 
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 BROWN = (130,  94,  35)
 
-class Player(pygame.sprite.Sprite):
+class Player(entity.Entity):
     def __init__(self, screen, current_room):
-        pygame.sprite.Sprite.__init__(self)
+        entity.Entity.__init__(self, current_room)
         
+        """
         #Possible directions are Left (L), Right (R), Up (U), Down (D)
         self.direction = "R"
         
@@ -54,6 +56,7 @@ class Player(pygame.sprite.Sprite):
         self.attacking = False
         self.frame = 0
         self.frame_temp = 0
+        """
         
         #Let's get some items! We need an inventory first, though
         self.inventory = i.Inventory(screen)
@@ -68,7 +71,8 @@ class Player(pygame.sprite.Sprite):
         
         #A list for every bullet that exists
         self.bullet_list = [] 
-            
+          
+    """  
     #Self explanatory
     def go_left(self):
         
@@ -100,11 +104,14 @@ class Player(pygame.sprite.Sprite):
                 if self.room.tile_list[column][row].contained_entity == self:
                     return [column, row]
         return [0, 0] 
+    """   
                 
     def get_item(self, item):
         self.inventory.get_item(item)
         
-    def change_room(self, room):
+    #I don't know why I have a setter for this, but for nothing else. 
+    #I should probably be more consistent
+    def set_room(self, room):
         self.room = room
         
     def collision_check(self):
@@ -157,6 +164,16 @@ class Player(pygame.sprite.Sprite):
                 
             if self.standing_frame >= self.image_frames.__len__():
                 self.standing_frame = 0
+
+            if self.moving[0]:
+                self.go_left()
+            elif self.moving[1]:
+                self.go_right()
+            elif self.moving[2]:
+                self.go_up()
+            elif self.moving[3]:
+                self.go_down()
+      
             
             self.image = self.image_frames[self.standing_frame]
             

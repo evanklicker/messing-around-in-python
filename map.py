@@ -172,15 +172,17 @@ class Tile(pygame.sprite.Sprite):
             self.contained_entity.update(screen, frame)
             
             #This animates the player moving between tiles
-            if not self.contained_entity.can_move:
-                if self.contained_entity.direction == "L":
-                    self.contained_entity.rect.x += self.contained_entity.walking_frame
-                elif self.contained_entity.direction == "R":
-                    self.contained_entity.rect.x -= self.contained_entity.walking_frame
-                elif self.contained_entity.direction == "U":
-                    self.contained_entity.rect.y += self.contained_entity.walking_frame
-                elif self.contained_entity.direction == "D":
-                    self.contained_entity.rect.y -= self.contained_entity.walking_frame
+            #Re-check if the tile still has the entity. 'Cuz it'll error if you don't
+            if self.contained_entity:
+	            if not self.contained_entity.can_move:
+	                if self.contained_entity.direction == "L":
+	                    self.contained_entity.rect.x += self.contained_entity.walking_frame
+	                elif self.contained_entity.direction == "R":
+	                    self.contained_entity.rect.x -= self.contained_entity.walking_frame
+	                elif self.contained_entity.direction == "U":
+	                    self.contained_entity.rect.y += self.contained_entity.walking_frame
+	                elif self.contained_entity.direction == "D":
+	                    self.contained_entity.rect.y -= self.contained_entity.walking_frame
     
     
         

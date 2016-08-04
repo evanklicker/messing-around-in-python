@@ -38,8 +38,8 @@ class Inventory():
         #This should never need to be rounded, unless the margin or screen width somehow become odd
         self.x_offset = round(screen.get_size()[0] - ((screen.get_size()[0] + self.margin) / 2))
         
-        #I multiplied this by 1.2 because I wanted it to be a little uneven- more buffer at the top than at the bottom
-        self.y_offset = slot.rect.height + self.margin * 4
+        #I multiplied this by 6 because I wanted it to be a little uneven- more buffer at the top than at the bottom
+        self.y_offset = slot.rect.height + self.margin * 6
     
         for slot in self.slot_list:
             #This will just be self.x_offset for row 1, and then a bit to the right for row 2
