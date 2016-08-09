@@ -44,8 +44,7 @@ class Entity(pygame.sprite.Sprite):
         self.cooldown_done = True
         self.attacking = False
         self.frame = 0
-        self.frame_temp = 0
-        
+        self.frame_temp = 0 
         
     #Self explanatory
     def go_left(self):
@@ -60,7 +59,6 @@ class Entity(pygame.sprite.Sprite):
         
         if self.can_move:
             self.direction = "R"
-            #self.room.entity_right(self)
             self.can_move = self.room.entity_right(self)
         
         
@@ -68,7 +66,6 @@ class Entity(pygame.sprite.Sprite):
         
         if self.can_move:
             self.direction = "U"
-            #self.room.entity_up(self)
             self.can_move = self.room.entity_up(self)
         
         
@@ -76,7 +73,6 @@ class Entity(pygame.sprite.Sprite):
         
         if self.can_move:
             self.direction = "D"
-            #self.room.entity_down(self)
             self.can_move = self.room.entity_down(self)
         
             
@@ -86,43 +82,7 @@ class Entity(pygame.sprite.Sprite):
             for row in range(self.room.tile_list[column].__len__()):
                 if self.room.tile_list[column][row].contained_entity == self:
                     return [column, row]
-        return [0, 0]
-        
-    '''      
-    def collision_check(self):
-        
-        #Make a new entity
-        future_entity = copy.copy(self)
-        #And check to see if he would run into a wall
-        #If he does, return True
-        if self.direction == "L":
-            future_entity.rect.x -= self.rect.width
-            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
-                return True
-            else:
-                return False
-        
-        elif self.direction == "R" :
-            future_entity.rect.x += self.rect.width
-            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
-                return True
-            else:
-                return False
-                
-        elif self.direction == "U":
-            future_entity.rect.y -= self.rect.width
-            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
-                return True
-            else:
-                return False                
-        
-        elif self.direction == "D":
-            future_entity.rect.y += self.rect.width
-            if pygame.sprite.spritecollide(future_entity, self.room.obstacle_list, False).__len__() > 0:
-                return True
-            else:
-                return False
-    '''        
+        return [0, 0]      
         
     def update(self, screen, frame):
         
@@ -167,6 +127,18 @@ class Entity(pygame.sprite.Sprite):
                 
             #Regardless of the image, we want it to be slightly smaller than the tile size, which happens to be 80x80 pixels
             self.image = pygame.transform.scale(self.image, [50, 70])
+            
+    def draw(self, screen):
+        
+        if self.draw_first:
+            screen.blit(self.image, [self.rect.x, self.rect.y])
+            
+        if self.attacking:
+            self.attack_draw(screen)
+            
+        if not self.draw_first:
+            screen.blit(self.image, [self.rect.x + x_offset, self.rect.y + y_offset])
+            
             
     def get_image(self, image_path):
         #This loads and creates the walking frames to be used by the player
